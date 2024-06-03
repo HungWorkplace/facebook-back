@@ -1,7 +1,8 @@
-import mongoose, { Types, Document, Schema, Model } from "mongoose";
+import { Document, Schema, Model, model } from "mongoose";
 import validator from "validator";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import type { Privacy } from "../types/declaration";
 
 interface IUser {
   firstName: string;
@@ -10,10 +11,13 @@ interface IUser {
   email: string;
   password: string;
   birthday: Date;
+  userSettings: {
+    postPrivacy: Privacy;
+  };
   gender: "male" | "female" | "other";
-  avatar?: string;
-  createdAt?: Date;
-  friends?: string[];
+  createdAt: Date;
+  avatar?: Schema.Types.ObjectId | string;
+  friends?: Schema.Types.ObjectId;
 }
 
 interface IUserMethods {
@@ -73,8 +77,15 @@ const userSchema = new Schema<IUser, UserModel, IUserMethods>(
       required: [true, "Gender is missing"],
     },
     createdAt: { type: Date, default: Date.now },
-    avatar: { type: String },
-    friends: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+    userSettings: {
+      postPrivacy: {
+        type: String,
+        enum: ["public", "private"],
+        default: "public",
+      },
+    },
+    avatar: { type: Schema.Types.ObjectId, ref: "Image" },
+    friends: [{ type: Schema.Types.ObjectId, ref: "User" }],
   },
   { toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
@@ -107,5 +118,5 @@ userSchema.methods.generateToken = function () {
   });
 };
 
-const User = mongoose.model<IUser, UserModel>("User", userSchema);
+const User = model<IUser, UserModel>("User", userSchema);
 export default User;

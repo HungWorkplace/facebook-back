@@ -9,6 +9,6 @@
     "strict": true,
     "typeRoots": ["./types"]
   },
-  "include": ["src/**/*.ts"],
+  "include": ["src/**/*.ts", "src/seed/users.ts", "src/seed/index.ts"],
   "exclude": ["node_modules"]
 }

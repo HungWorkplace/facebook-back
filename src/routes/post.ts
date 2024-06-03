@@ -1,29 +1,36 @@
 import { Router } from "express";
 import * as postController from "../controllers/post";
+import * as postCommentController from "../controllers/postComment";
 import * as authController from "../controllers/auth";
 import upload from "../middlewares/multer";
 
 const postRouter = Router();
 
-postRouter.get("/", postController.getPosts);
+// All request has req.user
+postRouter.use(authController.protect);
 
-postRouter.post(
-  "/",
-  authController.protect,
-  upload.array("images"),
-  postController.createPost
-);
+// create post, get posts in news feed, get my posts
+postRouter
+  .route("/")
+  .post(upload.array("images"), postController.createPost)
+  .get(postController.getPostsInNewsFeed);
 
-postRouter.delete(
-  "/:postId",
-  authController.protect,
-  postController.deletePost
-);
+postRouter.route("/me").get(postController.getMyPosts);
 
-postRouter.patch(
-  "/:postId/like",
-  authController.protect,
-  postController.likePost
-);
+// Interact with a post
+postRouter.route("/:postId").delete(postController.deletePost);
+
+postRouter.route("/:postId/like").patch(postController.likePost);
+
+// Comments
+postRouter.route("/:postId/comments").post(postCommentController.createComment);
+
+postRouter
+  .route("/comments/:commentId/like")
+  .post(postCommentController.likeComment);
+
+postRouter
+  .route("/:postId/comments/:commentId")
+  .delete(postCommentController.deleteComment);
 
 export default postRouter;

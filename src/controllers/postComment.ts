@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import catchAsync from "../utils/catchAsync";
 import Comment from "../models/comment";
 import { IUserDocument } from "../models/user";
+import Post from "../models/post";
 
 type RequestWithUser = Request & { user: IUserDocument };
 
@@ -19,6 +20,10 @@ export const createComment = catchAsync(
       content,
       post: postId,
       author: req.user._id,
+    });
+
+    await Post.findByIdAndUpdate(postId, {
+      $push: { comments: comment._id },
     });
 
     res.status(201).json({ comment });
@@ -49,5 +54,23 @@ export const likeComment = catchAsync(
     await comment.save();
 
     res.status(200).json({ comment });
+  }
+);
+
+// Delete comment from a post
+export const deleteComment = catchAsync(
+  async (req: RequestWithUser, res: Response, next: NextFunction) => {
+    const { postId, commentId } = req.params;
+
+    await Comment.findOneAndDelete({
+      _id: commentId,
+      post: postId,
+    });
+
+    await Post.findByIdAndUpdate(postId, {
+      $pull: { comments: commentId },
+    });
+
+    res.status(204).json({ message: "Comment deleted" });
   }
 );

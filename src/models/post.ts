@@ -1,8 +1,10 @@
 import { Schema, model } from "mongoose";
+import type { Privacy } from "../types/declaration";
 
 interface IPost {
   content: string;
   author: Schema.Types.ObjectId;
+  privacy: Privacy;
   images?: string[];
   likes?: Schema.Types.ObjectId[];
   comments?: Schema.Types.ObjectId[];
@@ -21,7 +23,17 @@ const postSchema = new Schema<IPost>({
     ref: "User",
     required: [true, "Please provide author"],
   },
-  images: [String],
+  images: [
+    {
+      type: Schema.ObjectId,
+      ref: "Image",
+    },
+  ],
+  privacy: {
+    type: String,
+    enum: ["public", "private"],
+    required: [true, "Please provide privacy"],
+  },
   likes: [
     {
       type: Schema.ObjectId,

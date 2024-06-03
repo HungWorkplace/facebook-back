@@ -4,14 +4,14 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import morgan from "morgan";
 import connectDB from "./config/database";
+import { seed } from "./seed";
 import dotenv from "dotenv";
 dotenv.config();
 
 import authRouters from "./routes/auth";
-import profileRouters from "./routes/profile";
 import errorController from "./controllers/error";
 import postRouter from "./routes/post";
-import commentRouter from "./routes/comment";
+import userRouter from "./routes/user";
 
 const app = express();
 
@@ -20,7 +20,12 @@ if (process.env.NODE_ENV === "development") {
 }
 
 // Connect to MongoDB
-connectDB();
+connectDB().then(() => {
+  // Seed data
+  if (process.env.SEED_DATA === "true") {
+    seed();
+  }
+});
 
 // Parser middleware
 app.use(bodyParser.json());
@@ -33,13 +38,12 @@ app.get("/", (req: Request, res: Response) => {
 });
 
 app.use("/auth", authRouters);
-app.use("/profile", profileRouters);
 app.use("/api/posts", postRouter);
-app.use("/api/comments", commentRouter);
+app.use("/api/users", userRouter);
 
 // 404 route
 app.all("*", (req: Request, res: Response) => {
-  res.status(404).send("Resource not found!");
+  res.status(404).send("404 | Route Not Found");
 });
 
 app.use(errorController);

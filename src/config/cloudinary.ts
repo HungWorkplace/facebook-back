@@ -14,6 +14,9 @@ const storage = new CloudinaryStorage({
     // @ts-ignore
     folder: "facebook",
     allowedFormats: ["jpg", "png", "jpg"],
+    transformation: [
+      { width: 500, height: 500, crop: "limit", quality: "auto:good" },
+    ],
   },
 });
 

@@ -1,9 +1,9 @@
-import mongoose, { Types, Document } from "mongoose";
+import mongoose, { Types, Document, Schema, Model } from "mongoose";
 import validator from "validator";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
-interface IUser extends Document {
+interface IUser {
   firstName: string;
   surname: string;
   phone: string;
@@ -13,6 +13,7 @@ interface IUser extends Document {
   gender: "male" | "female" | "other";
   avatar?: string;
   createdAt?: Date;
+  friends?: string[];
 }
 
 interface IUserMethods {
@@ -20,20 +21,19 @@ interface IUserMethods {
   generateToken: () => string;
 }
 
-export interface IUserDocument extends IUser, IUserMethods, Document {
-  _id: Types.ObjectId;
-}
+// use many places
+export interface IUserDocument extends IUser, IUserMethods, Document {}
 
-type UserModel = mongoose.Model<IUser, {}, IUserMethods>;
+type UserModel = Model<IUser, {}, IUserMethods>;
 
-const userSchema = new mongoose.Schema<IUser, UserModel, IUserMethods>(
+const userSchema = new Schema<IUser, UserModel, IUserMethods>(
   {
     firstName: {
       type: String,
       required: [true, "Please provide your first name"],
     },
     surname: { type: String, required: [true, "Please provide your surname"] },
-    phone: { type: String, default: null },
+    phone: { type: String },
     email: {
       type: String,
       required: [true, "Please provide your email"],
@@ -73,6 +73,8 @@ const userSchema = new mongoose.Schema<IUser, UserModel, IUserMethods>(
       required: [true, "Gender is missing"],
     },
     createdAt: { type: Date, default: Date.now },
+    avatar: { type: String },
+    friends: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   },
   { toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );

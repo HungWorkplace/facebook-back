@@ -1,4 +1,4 @@
-import { Document, Schema, Model, model } from "mongoose";
+import { Document, Schema, Model, model, Types } from "mongoose";
 import validator from "validator";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
@@ -16,8 +16,8 @@ interface IUser {
   };
   gender: "male" | "female" | "other";
   createdAt: Date;
-  avatar?: Schema.Types.ObjectId | string;
-  friends?: Schema.Types.ObjectId;
+  avatar: Schema.Types.ObjectId | string;
+  friends: Types.ObjectId[];
 }
 
 interface IUserMethods {
@@ -48,7 +48,6 @@ const userSchema = new Schema<IUser, UserModel, IUserMethods>(
       type: String,
       select: false,
       required: [true, "Please provide your password"],
-      // default: { minLength: 8, minLowercase: 1, minUppercase: 1, minNumbers: 1, minSymbols: 1, returnScore: false, pointsPerUnique: 1, pointsPerRepeat: 0.5, pointsForContainingLower: 10, pointsForContainingUpper: 10, pointsForContainingNumber: 10, pointsForContainingSymbol: 10 }
 
       /**Must be at least 8 characters long.
        *Must contain at least 1 lowercase letter.

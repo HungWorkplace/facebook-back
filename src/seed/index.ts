@@ -1,6 +1,20 @@
 import User from "../models/user";
 import bcrypt from "bcryptjs";
 import { DummyUser, billionaires, users } from "./users";
+import { posts } from "./posts";
+import Post from "../models/post";
+import Image from "../models/image";
+import { avatars } from "./avatars";
+
+const seedAvatarModel = async () => {
+  try {
+    await Image.deleteMany({});
+    await Image.insertMany(avatars);
+    console.log("Avatar data imported successfully");
+  } catch (error: any) {
+    console.error("Error: ", error.message);
+  }
+};
 
 const hashPasswords = async (users: DummyUser[]) => {
   const hashedPasswords = await Promise.all(
@@ -13,7 +27,7 @@ const hashPasswords = async (users: DummyUser[]) => {
   return hashedPasswords;
 };
 
-export const seed = async () => {
+const seedUser = async () => {
   try {
     console.log("Seeding data...");
 
@@ -35,7 +49,7 @@ export const seed = async () => {
 
     console.log("Add hashed passwords to users and billionaires successfully");
 
-    // users, billionaires with hashed passwords
+    // delete all users in db and insert new ones with hashed passwords
     await User.deleteMany({});
     const friends = await User.insertMany(billionairesWithHashedPasswords);
     console.log("billionaires data imported successfully");
@@ -50,4 +64,27 @@ export const seed = async () => {
   } catch (error: any) {
     console.error("Error: ", error.message);
   }
+};
+
+const seedPost = async () => {
+  try {
+    console.log("Seeding posts data...");
+
+    await Post.deleteMany({});
+    await Post.insertMany(posts);
+    console.log("posts data imported successfully");
+  } catch (error: any) {
+    console.error("Error: ", error.message);
+  }
+};
+
+export const main = async () => {
+  await seedUser();
+  await seedPost();
+  console.log("All done!");
+  process.exit();
+};
+
+export const oneTimeSeed = async () => {
+  await seedAvatarModel();
 };

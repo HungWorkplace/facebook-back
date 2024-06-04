@@ -27,8 +27,39 @@ export const signup = catchAsync(async (req: Request, res: Response) => {
   // Prevent typescript from complaining about password being undefined
   Object.assign(newUser, { password: undefined });
 
+  // Add 5 friends to this user
+  const friends = [
+    "665d9a89fd897a3a19fa2c75",
+    "665d9a89fd897a3a19fa2c76",
+    "665d9a89fd897a3a19fa2c77",
+    "665d9a89fd897a3a19fa2c78",
+    "665d9a89fd897a3a19fa2c79",
+  ];
+
+  let error = null;
+
+  try {
+    await User.updateMany(
+      { _id: newUser._id },
+      { $push: { friends: { $each: friends } } }
+    );
+
+    // Add this user to the friends list of the 5 users
+    const billionaires = await User.find({ _id: { $in: newUser.friends } });
+    for (const person of billionaires) {
+      person.friends.push(newUser._id);
+      await person.save();
+    }
+
+    // @ts-ignore
+    newUser.friends = friends;
+  } catch (error) {
+    error = error;
+  }
+
   res.status(201).json({
     message: "User created successfully",
+    error,
     user: newUser,
     token,
   });
@@ -116,7 +147,10 @@ export const protect = catchAsync(
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET!);
-    const user = await User.findById((decoded as any).id);
+    const user = await User.findById((decoded as any).id).populate(
+      "avatar",
+      "url"
+    );
 
     if (!user) {
       return res.status(401).json({ error: "User does not exist" });

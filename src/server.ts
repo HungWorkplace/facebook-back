@@ -4,7 +4,7 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import morgan from "morgan";
 import connectDB from "./config/database";
-import { seed } from "./seed";
+import { main, oneTimeSeed } from "./seed";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -23,7 +23,8 @@ if (process.env.NODE_ENV === "development") {
 connectDB().then(() => {
   // Seed data
   if (process.env.SEED_DATA === "true") {
-    seed();
+    main();
+    // oneTimeSeed();
   }
 });
 

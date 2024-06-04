@@ -3,7 +3,9 @@ import { Schema, model } from "mongoose";
 interface IImage {
   url: string;
   publicId: string;
-  post: Schema.Types.ObjectId;
+  author: Schema.Types.ObjectId;
+  isSuggested?: boolean;
+  post?: Schema.Types.ObjectId;
   createdAt?: Date;
 }
 
@@ -12,7 +14,11 @@ const imageSchema = new Schema({
     type: String,
     required: [true, "Please provide an image url"],
   },
-  publicId: String,
+  publicId: {
+    type: String,
+    required: [true, "Please provide an image publicId"],
+  },
+  isSuggested: Boolean,
   // Image can be used in User avatar or Post + images
   post: {
     type: Schema.Types.ObjectId,

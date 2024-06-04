@@ -18,8 +18,7 @@ export const billionaires: DummyUser[] = [
     surname: "Musk",
     birthday: "1971/06/28",
     gender: "male",
-    avatar:
-      "https://res.cloudinary.com/dabwxshg6/image/upload/v1717414805/facebook/elon-musk.jpg",
+    avatar: "665e62bf3982340a8ec101e6",
   },
   {
     email: "jeffbezos@gmail.com",
@@ -29,8 +28,7 @@ export const billionaires: DummyUser[] = [
     surname: "Bezos",
     birthday: "1964/01/12",
     gender: "male",
-    avatar:
-      "https://res.cloudinary.com/dabwxshg6/image/upload/v1717414805/facebook/jeff-bezos.jpg",
+    avatar: "665e62bf3982340a8ec101e7",
   },
   {
     email: "billgates@gmail.com",
@@ -40,8 +38,7 @@ export const billionaires: DummyUser[] = [
     surname: "Gates",
     birthday: "1955/10/28",
     gender: "male",
-    avatar:
-      "https://res.cloudinary.com/dabwxshg6/image/upload/v1717414805/facebook/bill-gate.jpg",
+    avatar: "665d9a89fd897a3a19fa2c77",
   },
   {
     email: "markzuckerberg@gmail.com",
@@ -51,8 +48,7 @@ export const billionaires: DummyUser[] = [
     surname: "Zuckerberg",
     birthday: "1984/05/14",
     gender: "male",
-    avatar:
-      "https://res.cloudinary.com/dabwxshg6/image/upload/v1717414805/facebook/mark-zuckerberg.jpg",
+    avatar: "665e62bf3982340a8ec101e9",
   },
   {
     email: "shouzichew@gmail.com",
@@ -62,8 +58,7 @@ export const billionaires: DummyUser[] = [
     surname: "Chew",
     birthday: "1983/01/01",
     gender: "male",
-    avatar:
-      "https://res.cloudinary.com/dabwxshg6/image/upload/v1717414805/facebook/shou-zi-chew.jpg",
+    avatar: "665e62bf3982340a8ec101ea",
   },
 ];
 

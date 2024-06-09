@@ -13,11 +13,13 @@ interface IUser {
   birthday: Date;
   userSettings: {
     postPrivacy: Privacy;
+    nameOrder: "firstNameFirst" | "surnameFirst";
   };
   gender: "male" | "female" | "other";
   createdAt: Date;
   avatar: Schema.Types.ObjectId | string;
   friends: Types.ObjectId[];
+  isVerified?: boolean;
 }
 
 interface IUserMethods {
@@ -82,6 +84,11 @@ const userSchema = new Schema<IUser, UserModel, IUserMethods>(
         enum: ["public", "private"],
         default: "public",
       },
+      nameOrder: {
+        type: String,
+        enum: ["firstNameFirst", "surnameFirst"],
+        default: "firstNameFirst",
+      },
     },
     avatar: { type: Schema.Types.ObjectId, ref: "Image" },
     friends: [{ type: Schema.Types.ObjectId, ref: "User" }],
@@ -91,7 +98,13 @@ const userSchema = new Schema<IUser, UserModel, IUserMethods>(
 
 // # Virtual property
 userSchema.virtual("fullName").get(function () {
-  return `${this.firstName} ${this.surname}`;
+  const nameOrder = this.userSettings.nameOrder;
+
+  if (nameOrder === "surnameFirst") {
+    return `${this.surname} ${this.firstName}`;
+  } else {
+    return `${this.firstName} ${this.surname}`;
+  }
 });
 
 // # Middleware

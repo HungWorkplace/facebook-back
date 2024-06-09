@@ -79,6 +79,7 @@ const seedPost = async () => {
 };
 
 export const main = async () => {
+  // ! After seeding the data, you must change 5 friends signup controller
   await seedUser();
   await seedPost();
   console.log("All done!");

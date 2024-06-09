@@ -1,6 +1,6 @@
 import { Schema, model } from "mongoose";
 
-interface IImage {
+export interface IImage {
   url: string;
   publicId: string;
   author: Schema.Types.ObjectId;

@@ -5,9 +5,9 @@ import Image from "../models/image";
 import { IUserDocument } from "../models/user";
 import { cloudinary } from "../config/cloudinary";
 
-type RequestWithUser = Request & { user: IUserDocument };
+export type RequestWithUser = Request & { user: IUserDocument };
 
-interface MulterRequest extends RequestWithUser {
+export interface MulterRequest extends RequestWithUser {
   files?: Express.Multer.File[];
 }
 
@@ -15,15 +15,18 @@ interface MulterRequest extends RequestWithUser {
 // If create post is failed, the images will not be saved to the database
 export const createPost = catchAsync(
   async (req: MulterRequest, res: Response, next: NextFunction) => {
-    const { content } = req.body;
+    const { content, privacy } = req.body;
 
-    if (!content) {
+    if (!content && !privacy) {
       if (req.files) {
         await Promise.all(
           req.files.map((file) => cloudinary.uploader.destroy(file.filename))
         );
       }
-      return res.status(400).json({ message: "Please provide content" });
+
+      return res
+        .status(400)
+        .json({ message: "Please provide content and privacy" });
     }
 
     const urlImages = req.files?.map((file) => ({
@@ -34,7 +37,7 @@ export const createPost = catchAsync(
     const post = await Post.create({
       content,
       author: req.user.id,
-      privacy: req.user.userSettings.postPrivacy,
+      privacy,
     });
 
     // Create images if there are any images in the request body and save them to the post document and the Image collection
@@ -59,20 +62,29 @@ export const deletePost = catchAsync(
   async (req: RequestWithUser, res: Response, next: NextFunction) => {
     const { postId } = req.params;
 
-    const deletedPost = await Post.findOneAndDelete({
-      // ! In query, we have to use _id instead of id
-      // ! because _id is the default field name of the id field in MongoDB
-      _id: postId,
-      // Only the author of the post can delete the post
-      author: req.user._id,
-    });
+    // find post by Id and author of it. If the post is not found or the author is not the user, return 404
+    // Delete the images of the post from the Image collection and the cloudinary
 
-    // There is no permission to delete this post
-    if (!deletedPost) {
-      return res
-        .status(403)
-        .json({ message: "There is no permission to delete this post" });
+    const post = await Post.findOne({
+      _id: postId,
+      author: req.user.id,
+    }).populate("images");
+
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
     }
+
+    await Image.deleteMany({ post: postId });
+
+    if (post.images) {
+      await Promise.all(
+        // @ts-ignore
+        post.images.map((image) => cloudinary.uploader.destroy(image?.publicId))
+      );
+    }
+    console.log(post.images);
+
+    await Post.findByIdAndDelete(postId);
 
     res.status(204).json({});
   }
@@ -90,14 +102,27 @@ export const getMyPosts = catchAsync(
   }
 );
 
-// Get posts by userId
 export const getPostsByUserId = catchAsync(
-  async (req: Request, res: Response, next: NextFunction) => {
+  async (req: RequestWithUser, res: Response, next: NextFunction) => {
     const { userId } = req.params;
+    const currentUserId = req.user.id;
 
-    const posts = await Post.find({ author: userId })
+    // find posts by userId, post privacy should be public or the author of the post should be the user
+    const posts = await Post.find({
+      author: userId,
+      $or: [
+        { privacy: "public" },
+        { author: currentUserId }, // the author of the post is the user
+      ],
+    })
+      .populate({
+        path: "author",
+        select: "-userSettings -phone -email -birthday",
+        populate: { path: "avatar", select: "url" },
+      })
       .populate("images", "url")
-      .populate("likes", "firstName surname fullName avatar")
+      .populate("comments")
+      .sort({ createdAt: -1, "likes.length": -1 })
       .exec();
 
     res.status(200).json({ posts });
@@ -113,10 +138,14 @@ export const getPostsInNewsFeed = catchAsync(
         { author: req.user.id },
       ],
     })
-      .populate("author", "firstName surname fullName avatar")
+      .populate({
+        path: "author",
+        select: "-userSettings -phone -email -birthday",
+        populate: { path: "avatar" },
+      })
       .populate("images", "url")
-      .populate("likes", "firstName surname fullName avatar")
-      // .populate("comments", "id content author")
+      .populate("comments")
+      .sort({ createdAt: -1, "likes.length": -1 })
       .exec();
 
     res.status(200).json({ posts });

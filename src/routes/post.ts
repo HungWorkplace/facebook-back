@@ -6,31 +6,43 @@ import upload from "../middlewares/multer";
 
 const postRouter = Router();
 
-// All request has req.user
-postRouter.use(authController.protect);
-
 // create post, get posts in news feed, get my posts
 postRouter
   .route("/")
-  .post(upload.array("images"), postController.createPost)
-  .get(postController.getPostsInNewsFeed);
+  .get(authController.protect, postController.getPostsInNewsFeed)
+  .post(
+    authController.protect,
+    upload.array("images"),
+    postController.createPost
+  );
 
-postRouter.route("/me").get(postController.getMyPosts);
+postRouter
+  .route("/users/:userId")
+  .get(authController.protect, postController.getPostsByUserId);
+
+postRouter.route("/me").get(authController.protect, postController.getMyPosts);
 
 // Interact with a post
-postRouter.route("/:postId").delete(postController.deletePost);
+postRouter
+  .route("/:postId")
+  .delete(authController.protect, postController.deletePost);
 
-postRouter.route("/:postId/like").patch(postController.likePost);
+postRouter
+  .route("/:postId/like")
+  .patch(authController.protect, postController.likePost);
 
 // Comments
-postRouter.route("/:postId/comments").post(postCommentController.createComment);
+postRouter
+  .route("/:postId/comments")
+  .get(postCommentController.getCommentsByPostId)
+  .post(authController.protect, postCommentController.createComment);
 
 postRouter
   .route("/comments/:commentId/like")
-  .post(postCommentController.likeComment);
+  .patch(authController.protect, postCommentController.likeComment);
 
 postRouter
   .route("/:postId/comments/:commentId")
-  .delete(postCommentController.deleteComment);
+  .delete(authController.protect, postCommentController.deleteComment);
 
 export default postRouter;

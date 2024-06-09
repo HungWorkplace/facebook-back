@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import User from "../models/user";
+import Image from "../models/image";
 import { generateTokenAndCookieOptions } from "../helpers/generateTokenAndCookieOptions";
 import jwt from "jsonwebtoken";
 import catchAsync from "../utils/catchAsync";
@@ -20,6 +21,18 @@ export const signup = catchAsync(async (req: Request, res: Response) => {
   const newUser = new User(req.body);
   await newUser.save();
 
+  // Create a default avatar for the user
+  const defaultImage = await Image.create({
+    url: "https://res.cloudinary.com/dabwxshg6/image/upload/v1717579812/facebook/default-avatar.jpg",
+    publicId: "default-avatar",
+    isSuggested: true,
+    author: newUser._id,
+  });
+
+  newUser.avatar = defaultImage._id.toString();
+  await newUser.save();
+
+  // Generate token and send it in a cookie
   const { token, cookieOptions } = generateTokenAndCookieOptions(newUser);
   res.cookie("jwt", token, cookieOptions);
 
@@ -28,31 +41,28 @@ export const signup = catchAsync(async (req: Request, res: Response) => {
   Object.assign(newUser, { password: undefined });
 
   // Add 5 friends to this user
+  // ! Check _id in Database before adding friends. Because we are using the seed data
   const friends = [
-    "665d9a89fd897a3a19fa2c75",
-    "665d9a89fd897a3a19fa2c76",
-    "665d9a89fd897a3a19fa2c77",
-    "665d9a89fd897a3a19fa2c78",
-    "665d9a89fd897a3a19fa2c79",
+    "665e6340a064336cb45b7046",
+    "665e6340a064336cb45b7047",
+    "665e6340a064336cb45b7048",
+    "665e6340a064336cb45b7049",
+    "665e6340a064336cb45b704a",
+    "66603928d0b77a3b7a6d4fe3",
   ];
 
   let error = null;
 
   try {
-    await User.updateMany(
+    await User.updateOne(
       { _id: newUser._id },
       { $push: { friends: { $each: friends } } }
     );
 
-    // Add this user to the friends list of the 5 users
-    const billionaires = await User.find({ _id: { $in: newUser.friends } });
-    for (const person of billionaires) {
-      person.friends.push(newUser._id);
-      await person.save();
-    }
-
-    // @ts-ignore
-    newUser.friends = friends;
+    await User.updateMany(
+      { _id: { $in: friends } },
+      { $addToSet: { friends: newUser._id } }
+    );
   } catch (error) {
     error = error;
   }

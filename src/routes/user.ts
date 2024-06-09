@@ -8,6 +8,14 @@ const userRouter = Router();
 
 userRouter.route("/me").get(authController.protect, userController.getMe);
 
+userRouter
+  .route("/me/friends")
+  .get(authController.protect, userController.getFriends);
+
+userRouter
+  .route("/me/post-privacy")
+  .patch(authController.protect, userController.updatePostPrivacy);
+
 // get user by id
 userRouter.route("/:userId").get(userController.getUserById);
 
@@ -21,6 +29,6 @@ userRouter
   );
 
 //   Get all posts of a user
-userRouter.route("/:userId/posts").get(postController.getPostsByUserId);
+userRouter.route("/:userId/images").get(userController.getImagesByUserId);
 
 export default userRouter;

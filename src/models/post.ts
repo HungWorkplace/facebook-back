@@ -1,11 +1,12 @@
 import { Schema, model } from "mongoose";
 import type { Privacy } from "../types/declaration";
+import { IImage } from "./image";
 
 interface IPost {
   content: string;
   author: Schema.Types.ObjectId;
   privacy: Privacy;
-  images?: string[];
+  images?: string[] | IImage[];
   likes?: Schema.Types.ObjectId[];
   comments?: Schema.Types.ObjectId[];
   createdAt?: Date;

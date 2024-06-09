@@ -74,3 +74,27 @@ export const deleteComment = catchAsync(
     res.status(204).json({ message: "Comment deleted" });
   }
 );
+
+export const getCommentsByPostId = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { postId } = req.params;
+
+    const post = await Post.findById(postId);
+
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    if (post.privacy === "private") {
+      return res.status(400).json({ message: "This post is private" });
+    }
+
+    const comments = await Comment.find({ post: postId }).populate({
+      path: "author",
+      select: "firstName surname fullName avatar gender",
+      populate: { path: "avatar", select: "url" },
+    });
+
+    res.status(200).json({ comments });
+  }
+);

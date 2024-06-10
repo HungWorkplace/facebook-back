@@ -4,7 +4,6 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import morgan from "morgan";
 import connectDB from "./config/database";
-import { main, oneTimeSeed } from "./seed";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -20,13 +19,7 @@ if (process.env.NODE_ENV === "development") {
 }
 
 // Connect to MongoDB
-connectDB().then(() => {
-  // Seed data
-  if (process.env.SEED_DATA === "true") {
-    main();
-    // oneTimeSeed();
-  }
-});
+connectDB();
 
 // Parser middleware
 app.use(bodyParser.json());

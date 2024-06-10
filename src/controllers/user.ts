@@ -1,10 +1,10 @@
 import { Request, Response, NextFunction } from "express";
 import catchAsync from "../utils/catchAsync";
-import User, { IUserDocument } from "../models/user";
+import User from "../models/user";
 import Image from "../models/image";
 import { cloudinary } from "../config/cloudinary";
-import { suggestedImages } from "../seed/suggestedImages";
 import { MulterRequest, RequestWithUser } from "./post";
+import { suggestedImages } from "../seed/suggestedImages";
 
 export const getMe = catchAsync(async (req: Request, res: Response) => {
   const user = req.user;

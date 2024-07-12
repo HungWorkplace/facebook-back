@@ -1,9 +1,10 @@
 import { Request, Response, NextFunction } from "express";
-import User from "../models/user";
+import User, { IUserDocument } from "../models/user";
 import Image from "../models/image";
 import { generateTokenAndCookieOptions } from "../helpers/generateTokenAndCookieOptions";
 import jwt from "jsonwebtoken";
 import catchAsync from "../utils/catchAsync";
+import { RequestWithUser } from "./post";
 
 export const signup = catchAsync(async (req: Request, res: Response) => {
   const { email, password } = req.body;
@@ -18,7 +19,7 @@ export const signup = catchAsync(async (req: Request, res: Response) => {
 
   // Mongoose will just receive the fields that are in the schema
   // Password will be hashed before saving
-  const newUser = new User(req.body);
+  const newUser = new User(req.body) as unknown as IUserDocument;
   await newUser.save();
 
   // Create a default avatar for the user
@@ -81,7 +82,9 @@ export const login = catchAsync(async (req: Request, res: Response) => {
     return res.status(400).json({ error: "Email and password are required" });
   }
 
-  const user = await User.findOne({ email }).select("+password");
+  const user = (await User.findOne({ email }).select(
+    "+password"
+  )) as IUserDocument;
 
   if (!user) {
     return res.status(400).json({ error: "User does not exist" });
@@ -113,7 +116,7 @@ export const logout = catchAsync(async (req: Request, res: Response) => {
 });
 
 export const userRequest = async (
-  req: Request,
+  req: RequestWithUser,
   res: Response,
   next: NextFunction
 ) => {
@@ -133,7 +136,7 @@ export const userRequest = async (
     const user = await User.findById((decoded as any).id);
     if (!user) return next();
 
-    req.user = user;
+    req.user = user as unknown as IUserDocument;
     next();
   } catch (error) {
     return next();
@@ -142,7 +145,7 @@ export const userRequest = async (
 
 // Check token in cookies and headers, if it exists, add user to the request. if not, prevent access
 export const protect = catchAsync(
-  async (req: Request, res: Response, next: NextFunction) => {
+  async (req: RequestWithUser, res: Response, next: NextFunction) => {
     let token: string | null = null;
 
     if (req.cookies.jwt) {
@@ -166,7 +169,7 @@ export const protect = catchAsync(
       return res.status(401).json({ error: "User does not exist" });
     }
 
-    req.user = user;
+    req.user = user as unknown as IUserDocument;
     next();
   }
 );

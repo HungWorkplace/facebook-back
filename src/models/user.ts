@@ -22,13 +22,15 @@ interface IUser {
   isVerified?: boolean;
 }
 
-interface IUserMethods {
+export interface IUserMethods {
   comparePassword: (password: string, userPassword: string) => Promise<boolean>;
   generateToken: () => string;
 }
 
 // use many places
-export interface IUserDocument extends IUser, IUserMethods, Document {}
+export interface IUserDocument extends IUser, IUserMethods, Document {
+  _id: Schema.Types.ObjectId;
+}
 
 type UserModel = Model<IUser, {}, IUserMethods>;
 

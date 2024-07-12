@@ -4,7 +4,7 @@ import Comment from "../models/comment";
 import { IUserDocument } from "../models/user";
 import Post from "../models/post";
 
-type RequestWithUser = Request & { user: IUserDocument };
+export type RequestWithUser = Request & { user: IUserDocument };
 
 // Create comment
 export const createComment = catchAsync(

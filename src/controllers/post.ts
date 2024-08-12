@@ -82,7 +82,6 @@ export const deletePost = catchAsync(
         post.images.map((image) => cloudinary.uploader.destroy(image?.publicId))
       );
     }
-    console.log(post.images);
 
     await Post.findByIdAndDelete(postId);
 

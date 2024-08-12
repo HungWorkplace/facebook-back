@@ -1,5 +1,4 @@
 import { Router } from "express";
-import * as postController from "../controllers/post";
 import * as userController from "../controllers/user";
 import * as authController from "../controllers/auth";
 import upload from "../middlewares/multer";
